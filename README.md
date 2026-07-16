@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhatsApp Attendance System (Pro Group)
 
-## Getting Started
+Next.js 14 (App Router) + TypeScript + Tailwind + PostgreSQL + Prisma.
 
-First, run the development server:
+This is the backend/dashboard for a WhatsApp-based attendance system. An external n8n workflow sends HTTP POST requests to this app when employees message "حضور" / "انصراف". This app contains all business logic and is the single source of truth.
+
+## Requirements
+
+- Node.js 18+ (Prisma is pinned to v5 for compatibility).
+- Docker + Docker Compose (for PostgreSQL).
+
+## Local development
+
+1) Create env file:
+
+```bash
+cp .env.example .env
+```
+
+2) Start Postgres:
+
+```bash
+docker compose up -d db
+```
+
+3) Run migrations + seed:
+
+```bash
+npx prisma migrate dev
+npx prisma db seed
+```
+
+Seed prints:
+- Dashboard login: `admin@progroup.eg` / `admin123`
+- API token for n8n (copy it when printed)
+
+4) Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 (redirects to `/ar` by default).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## i18n (Arabic + English)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Locale routing: `/ar/...` and `/en/...` (default `/ar`).
+- Translation files:
+  - `messages/ar.json`
+  - `messages/en.json`
 
-## Learn More
+To add a new string:
+1. Add a key in both JSON files.
+2. Use it via `useTranslations('namespace')` and never hardcode UI text.
 
-To learn more about Next.js, take a look at the following resources:
+## n8n integration API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### `POST /api/attendance/check`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Auth: `Authorization: Bearer <token>` (token is stored hashed in `ApiToken`).
 
-## Deploy on Vercel
+Request body example:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "phone": "+201001234567",
+  "employee_code_guess": "1032",
+  "action": "check_in",
+  "timestamp": "2026-07-13T09:03:00+02:00",
+  "location": "فرع مدينتي",
+  "note": "جه متأخر شوية",
+  "raw_message": "حضور فرع مدينتي"
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Response statuses:
+
+```json
+{ "status": "success", "employee_name": "...", "message": "..." }
+{ "status": "not_found" }
+{ "status": "phone_mismatch" }
+{ "status": "checkout_not_allowed" }
+{ "status": "already_checked_out" }
+{ "status": "no_check_in" }
+```
+
+### Optional lookup helper
+
+`GET /api/employees/lookup?phone=...`
+
+## Cron (daily marking)
+
+Trigger:
+
+`POST /api/cron/mark-attendance`
+
+Header:
+
+`x-cron-secret: <CRON_SECRET>`
+
+This marks:
+- FIELD: check-in without check-out → `INCOMPLETE`
+- Working day without record → `ABSENT`
+
+## Docker (full app + DB)
+
+```bash
+docker compose up --build
+```

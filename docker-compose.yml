@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: attendance
+      POSTGRES_PASSWORD: attendance
+      POSTGRES_DB: attendance
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U attendance -d attendance"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://attendance:attendance@db:5432/attendance?schema=public
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
+      CRON_SECRET: ${CRON_SECRET:-dev-cron-secret}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeType {
+  OFFICE
+  FIELD
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HOLIDAY
+  INCOMPLETE
+}
+
+enum UserRole {
+  ADMIN
+  VIEWER
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  name          String
+  role          UserRole @default(ADMIN)
+  created_at    DateTime @default(now())
+}
+
+model Employee {
+  id                     Int                @id @default(autoincrement())
+  employee_code          Int                @unique
+  name                   String
+  phone                  String             @unique
+  type                   EmployeeType
+  allow_checkout_input   Boolean            @default(false)
+  default_checkout_time  String?
+  required_days_per_month Int?
+  required_hours_per_month Int?
+  is_active              Boolean            @default(true)
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+  weekly_offs            EmployeeWeeklyOff[]
+  attendance_records     AttendanceRecord[]
+}
+
+model EmployeeWeeklyOff {
+  id          Int      @id @default(autoincrement())
+  employee_id Int
+  day_of_week Int
+  employee    Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+
+  @@unique([employee_id, day_of_week])
+}
+
+model CompanyHoliday {
+  id    Int      @id @default(autoincrement())
+  date  DateTime @db.Date
+  label String
+}
+
+model AttendanceRecord {
+  id                 Int              @id @default(autoincrement())
+  employee_id        Int
+  date               DateTime         @db.Date
+  status             AttendanceStatus
+  check_in_time      DateTime?
+  check_in_location  String?
+  check_out_time     DateTime?
+  check_out_location String?
+  note               String?          @db.Text
+  is_manual_override Boolean          @default(false)
+  edited_by          String?
+  edited_at          DateTime?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  employee           Employee         @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  history            AttendanceHistory[]
+
+  @@unique([employee_id, date])
+}
+
+model AttendanceHistory {
+  id                   Int              @id @default(autoincrement())
+  attendance_record_id Int
+  changed_by           String
+  changed_at           DateTime         @default(now())
+  old_value            Json
+  new_value            Json
+  attendance_record    AttendanceRecord @relation(fields: [attendance_record_id], references: [id], onDelete: Cascade)
+}
+
+model ApiToken {
+  id         Int      @id @default(autoincrement())
+  token_hash String
+  label      String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+}
+
+model MonthLock {
+  id         Int      @id @default(autoincrement())
+  year       Int
+  month      Int
+  locked_at  DateTime @default(now())
+  locked_by  String
+
+  @@unique([year, month])
+}
+
+model AppSetting {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique
+  value      String
+  updated_at DateTime @updatedAt
+}

@@ -3,25 +3,55 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --brand: #1d4ed8;
+  --page-bg: #fafafa;
+  --status-present: #2f9e58;
+  --status-absent: #d64545;
+  --status-holiday: #c7c9cc;
+  --status-incomplete: #e8a93b;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--page-bg);
+  color: #1a1a1a;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+    box-shadow: 0 0 0 2px white;
+  }
+}
+
+.status-present {
+  background-color: var(--status-present);
+}
+.status-absent {
+  background-color: var(--status-absent);
+}
+.status-holiday {
+  background-color: var(--status-holiday);
+}
+.status-incomplete {
+  background-color: var(--status-incomplete);
 }
