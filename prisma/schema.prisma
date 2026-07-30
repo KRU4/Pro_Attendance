@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -43,6 +44,8 @@ model Employee {
   default_checkout_time  String?
   required_days_per_month Int?
   required_hours_per_month Int?
+  monthly_salary          Decimal?           @db.Decimal(10,2)
+  absence_deduction_amount Decimal?          @db.Decimal(10,2)
   is_active              Boolean            @default(true)
   created_at             DateTime           @default(now())
   updated_at             DateTime           @updatedAt

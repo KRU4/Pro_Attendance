@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { validateApiToken } from "@/lib/api-token";
 import { normalizePhone, isValidPhone } from "@/lib/phone";
 import { EmployeeType } from "@prisma/client";
 import { z } from "zod";
@@ -12,13 +13,19 @@ const createSchema = z.object({
   allow_checkout_input: z.boolean().optional(),
   default_checkout_time: z.string().nullable().optional(),
   required_hours_per_month: z.number().nullable().optional(),
+  monthly_salary: z.number().nullable().optional(),
+  absence_deduction_amount: z.number().nullable().optional(),
   weekly_offs: z.array(z.number().min(0).max(6)),
   is_active: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = request.headers.get("authorization");
+  const hasValidToken = await validateApiToken(auth);
+  if (!session && !hasValidToken) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
 
   const search = request.nextUrl.searchParams.get("search") || "";
   const type = request.nextUrl.searchParams.get("type");
@@ -79,6 +86,8 @@ export async function POST(request: NextRequest) {
           (parsed.data.type === "OFFICE" ? "18:00" : null),
         required_days_per_month: null,
         required_hours_per_month: parsed.data.required_hours_per_month ?? null,
+        monthly_salary: parsed.data.monthly_salary ?? null,
+        absence_deduction_amount: parsed.data.absence_deduction_amount ?? null,
         is_active: parsed.data.is_active ?? true,
         weekly_offs: {
           create: parsed.data.weekly_offs.map((d) => ({ day_of_week: d })),

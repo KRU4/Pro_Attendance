@@ -128,3 +128,81 @@ export async function exportAttendanceExcel(params: ExportParams): Promise<Buffe
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
+
+interface SalaryRow {
+  employeeCode: number;
+  name: string;
+  absentDays: number;
+  monthlySalary: number;
+  deductionPerDay: number;
+  totalDeduction: number;
+  netSalary: number;
+}
+
+interface SalaryExportParams {
+  rows: SalaryRow[];
+  year: number;
+  month: number;
+  locale: "ar" | "en";
+}
+
+const salaryLabels = {
+  ar: {
+    sheet: "المرتبات",
+    code: "الكود",
+    name: "الاسم",
+    absentDays: "أيام الغياب",
+    monthlySalary: "المرتب الشهري",
+    deductionPerDay: "خصم اليوم الواحد",
+    totalDeduction: "إجمالي الخصم",
+    netSalary: "المرتب الصافي",
+  },
+  en: {
+    sheet: "Salaries",
+    code: "Code",
+    name: "Name",
+    absentDays: "Absent days",
+    monthlySalary: "Monthly salary",
+    deductionPerDay: "Deduction/day",
+    totalDeduction: "Total deduction",
+    netSalary: "Net salary",
+  },
+};
+
+export async function exportSalariesExcel(params: SalaryExportParams): Promise<Buffer> {
+  const { rows, locale } = params;
+  const t = salaryLabels[locale];
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(t.sheet);
+  if (locale === "ar") {
+    sheet.views = [{ rightToLeft: true }];
+  }
+
+  const headerRow = sheet.addRow([
+    t.code,
+    t.name,
+    t.absentDays,
+    t.monthlySalary,
+    t.deductionPerDay,
+    t.totalDeduction,
+    t.netSalary,
+  ]);
+  headerRow.font = { bold: true };
+
+  for (const r of rows) {
+    sheet.addRow([
+      r.employeeCode,
+      r.name,
+      r.absentDays,
+      r.monthlySalary.toFixed(2),
+      r.deductionPerDay.toFixed(2),
+      r.totalDeduction.toFixed(2),
+      r.netSalary.toFixed(2),
+    ]);
+  }
+
+  sheet.columns.forEach((col) => { col.width = 16; });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}

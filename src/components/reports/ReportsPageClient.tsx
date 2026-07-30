@@ -22,6 +22,10 @@ interface SummaryRow {
   requiredDays: number | null;
   hoursDifference: number | null;
   daysDifference: number | null;
+  monthlySalary: number | null;
+  deductionPerDay: number | null;
+  totalDeduction: number | null;
+  netSalary: number | null;
 }
 
 export default function ReportsPageClient({ userName }: { userName: string }) {
@@ -81,6 +85,17 @@ export default function ReportsPageClient({ userName }: { userName: string }) {
     showToast(t("exported"));
   };
 
+  const downloadSalaries = () => {
+    const params = new URLSearchParams({
+      year: String(year),
+      month: String(month),
+      locale,
+    });
+    if (typeFilter !== "ALL") params.set("type", typeFilter);
+    window.open(`/api/export/salaries?${params}`, "_blank");
+    showToast(t("exported"));
+  };
+
   const diffColor = (val: number | null) => {
     if (val == null) return "";
     if (val >= 0) return "text-status-present";
@@ -126,6 +141,9 @@ export default function ReportsPageClient({ userName }: { userName: string }) {
             >
               {t("exportByType")}
             </Button>
+            <Button variant="secondary" size="sm" onClick={downloadSalaries}>
+              {t("exportSalaries")}
+            </Button>
           </div>
         </div>
 
@@ -144,6 +162,7 @@ export default function ReportsPageClient({ userName }: { userName: string }) {
                   <th className="px-4 py-3 text-start font-medium tabular-nums">{t("totalHours")}</th>
                   <th className="px-4 py-3 text-start font-medium tabular-nums">{t("requiredHours")}</th>
                   <th className="px-4 py-3 text-start font-medium tabular-nums">{t("difference")}</th>
+                  <th className="px-4 py-3 text-start font-medium tabular-nums">{t("netSalary")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,6 +202,20 @@ export default function ReportsPageClient({ userName }: { userName: string }) {
                       {row.hoursDifference != null
                         ? `${row.hoursDifference > 0 ? "+" : ""}${row.hoursDifference.toFixed(1)}`
                         : "—"}
+                    </td>
+                    <td className="tabular-nums px-4 py-3">
+                      {row.netSalary != null ? (
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-medium">{row.netSalary.toFixed(2)}</span>
+                          {row.totalDeduction != null && row.totalDeduction > 0 && (
+                            <span className="text-xs text-status-absent">
+                              -{row.totalDeduction.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                   </tr>
                 ))}

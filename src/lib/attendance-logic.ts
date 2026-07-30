@@ -53,6 +53,10 @@ export interface MonthSummary {
   requiredDays: number | null;
   hoursDifference: number | null;
   daysDifference: number | null;
+  monthlySalary: number | null;
+  deductionPerDay: number | null;
+  totalDeduction: number | null;
+  netSalary: number | null;
 }
 
 export function parseDateOnly(s: string): Date {
@@ -167,6 +171,8 @@ export async function buildGridForMonth(
         }
       } else if (isOff) {
         status = AttendanceStatus.HOLIDAY;
+      } else if (dateStr < toDateOnlyTz(new Date(), timezone)) {
+        status = AttendanceStatus.ABSENT;
       }
 
       return {
@@ -269,6 +275,18 @@ export async function computeMonthSummary(
           ? totalHours - requiredHours
           : null,
       daysDifference: presentDays - requiredDays,
+      monthlySalary: emp.monthly_salary != null ? Number(emp.monthly_salary) : null,
+      deductionPerDay:
+        emp.absence_deduction_amount != null ? Number(emp.absence_deduction_amount) : null,
+      totalDeduction:
+        emp.absence_deduction_amount != null
+          ? absentDays * Number(emp.absence_deduction_amount)
+          : null,
+      netSalary:
+        emp.monthly_salary != null
+          ? Number(emp.monthly_salary) -
+            absentDays * Number(emp.absence_deduction_amount ?? 0)
+          : null,
     };
   });
 }

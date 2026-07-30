@@ -127,7 +127,11 @@
     "updated": "تم تحديث بيانات الموظف",
     "deactivated": "تم إلغاء تفعيل الموظف",
     "activated": "تم تفعيل الموظف",
-    "searchPlaceholder": "بحث بالاسم أو الهاتف أو الكود..."
+    "searchPlaceholder": "بحث بالاسم أو الهاتف أو الكود...",
+    "confirmDelete": "هيتم حذف {name} وكل سجلات حضوره نهائيًا، متأكد؟",
+    "deleted": "تم حذف الموظف نهائيًا",
+    "salary": "المرتب الشهري",
+    "absenceDeduction": "خصم اليوم الواحد عند الغياب"
   },
   "attendance": {
     "title": "الحضور والانصراف",
@@ -155,7 +159,9 @@
     "employee": "الموظف",
     "empty": "لا يوجد موظفين لعرض الحضور. أضف موظفين أولاً.",
     "filterType": "تصفية حسب النوع",
-    "searchPlaceholder": "بحث باسم الموظف..."
+    "searchPlaceholder": "بحث باسم الموظف...",
+    "clear": "مسح",
+    "clearConfirm": "هيتم مسح تسجيل هذا اليوم بالكامل لهذا الموظف، وكأنه لم يسجل شيء. متأكد؟"
   },
   "reports": {
     "title": "التقارير",
@@ -167,12 +173,14 @@
     "requiredHours": "الساعات المطلوبة",
     "requiredDays": "الأيام المطلوبة",
     "difference": "الفرق",
+    "netSalary": "المرتب الصافي",
     "exportAll": "تصدير الكل",
     "exportSelected": "تصدير المحدد",
     "exportByType": "تصدير حسب النوع",
     "selectEmployee": "اختر موظفًا للتصدير",
     "noSelection": "لم يتم تحديد موظف",
-    "exported": "تم التصدير بنجاح"
+    "exported": "تم التصدير بنجاح",
+    "exportSalaries": "تصدير المرتبات"
   },
   "settings": {
     "title": "الإعدادات",

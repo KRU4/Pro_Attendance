@@ -13,6 +13,8 @@ const updateSchema = z.object({
   allow_checkout_input: z.boolean().optional(),
   default_checkout_time: z.string().nullable().optional(),
   required_hours_per_month: z.number().nullable().optional(),
+  monthly_salary: z.number().nullable().optional(),
+  absence_deduction_amount: z.number().nullable().optional(),
   weekly_offs: z.array(z.number().min(0).max(6)).optional(),
   is_active: z.boolean().optional(),
 });
@@ -34,6 +36,29 @@ export async function GET(
 
   if (!employee) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json(employee);
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getSession();
+  if (!session || session.role !== "ADMIN") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  const id = parseEmployeeId(params.id);
+  if (!id) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  try {
+    await prisma.employee.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
+  }
 }
 
 export async function PUT(

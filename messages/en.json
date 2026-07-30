@@ -127,7 +127,11 @@
     "updated": "Employee updated successfully",
     "deactivated": "Employee deactivated",
     "activated": "Employee activated",
-    "searchPlaceholder": "Search by name, phone, or code..."
+    "searchPlaceholder": "Search by name, phone, or code...",
+    "confirmDelete": "This will permanently delete {name} and all their attendance records. Are you sure?",
+    "deleted": "Employee permanently deleted",
+    "salary": "Monthly salary",
+    "absenceDeduction": "Per-day deduction for absence"
   },
   "attendance": {
     "title": "Attendance",
@@ -155,7 +159,9 @@
     "employee": "Employee",
     "empty": "No employees to show attendance for. Add employees first.",
     "filterType": "Filter by type",
-    "searchPlaceholder": "Search by employee name..."
+    "searchPlaceholder": "Search by employee name...",
+    "clear": "Clear",
+    "clearConfirm": "This will completely clear this day's record for this employee, as if nothing was ever recorded. Are you sure?"
   },
   "reports": {
     "title": "Reports",
@@ -167,12 +173,14 @@
     "requiredHours": "Required hours",
     "requiredDays": "Required days",
     "difference": "Difference",
+    "netSalary": "Net salary",
     "exportAll": "Export all",
     "exportSelected": "Export selected",
     "exportByType": "Export by type",
     "selectEmployee": "Select an employee to export",
     "noSelection": "No employee selected",
-    "exported": "Export completed"
+    "exported": "Export completed",
+    "exportSalaries": "Export salaries"
   },
   "settings": {
     "title": "Settings",

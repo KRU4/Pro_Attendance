@@ -16,6 +16,8 @@ interface Employee {
   default_checkout_time: string | null;
   required_days_per_month: number | null;
   required_hours_per_month: number | null;
+  monthly_salary: number | null;
+  absence_deduction_amount: number | null;
   weekly_offs: { day_of_week: number }[];
 }
 
@@ -44,6 +46,12 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
   const [requiredHours, setRequiredHours] = useState(
     String(employee?.required_hours_per_month ?? "")
   );
+  const [monthlySalary, setMonthlySalary] = useState(
+    String(employee?.monthly_salary ?? "")
+  );
+  const [absenceDeduction, setAbsenceDeduction] = useState(
+    String(employee?.absence_deduction_amount ?? "")
+  );
   const [weeklyOffs, setWeeklyOffs] = useState<number[]>(
     employee?.weekly_offs.map((o) => o.day_of_week) ?? DEFAULT_OFFS
   );
@@ -71,6 +79,8 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
       required_days_per_month: null,
       required_hours_per_month:
         type === "FIELD" && requiredHours ? parseInt(requiredHours) : null,
+      monthly_salary: monthlySalary ? parseFloat(monthlySalary) : null,
+      absence_deduction_amount: absenceDeduction ? parseFloat(absenceDeduction) : null,
       weekly_offs: weeklyOffs,
       is_active: isActive,
     };
@@ -155,6 +165,21 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
           />
         </div>
       )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label={t("salary")}
+          type="number"
+          value={monthlySalary}
+          onChange={(e) => setMonthlySalary(e.target.value)}
+        />
+        <Input
+          label={t("absenceDeduction")}
+          type="number"
+          value={absenceDeduction}
+          onChange={(e) => setAbsenceDeduction(e.target.value)}
+        />
+      </div>
 
       <div>
         <p className="mb-2 text-sm font-medium">{t("weeklyOff")}</p>

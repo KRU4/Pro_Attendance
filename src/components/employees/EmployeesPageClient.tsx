@@ -22,6 +22,8 @@ interface Employee {
   default_checkout_time: string | null;
   required_days_per_month: number | null;
   required_hours_per_month: number | null;
+  monthly_salary: number | null;
+  absence_deduction_amount: number | null;
   weekly_offs: { day_of_week: number }[];
 }
 
@@ -69,6 +71,17 @@ export function EmployeesPageClient({ userName }: { userName: string }) {
     setEditing(null);
     showToast(editing ? t("updated") : t("created"));
     fetchEmployees();
+  };
+
+  const handleDelete = async (emp: Employee) => {
+    if (!window.confirm(t("confirmDelete", { name: emp.name }))) return;
+    const res = await fetch(`/api/employees/${emp.id}`, { method: "DELETE" });
+    if (res.ok) {
+      showToast(t("deleted"));
+      fetchEmployees();
+    } else {
+      showToast(tc("error"));
+    }
   };
 
   return (
@@ -170,6 +183,14 @@ export function EmployeesPageClient({ userName }: { userName: string }) {
                           onClick={() => toggleActive(emp)}
                         >
                           {emp.is_active ? t("deactivate") : t("activate")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => handleDelete(emp)}
+                        >
+                          {tc("delete")}
                         </Button>
                       </div>
                     </td>

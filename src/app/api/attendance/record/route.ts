@@ -32,6 +32,45 @@ function serializeRecord(record: {
   };
 }
 
+export async function DELETE(request: NextRequest) {
+  const session = await getSession();
+  if (!session || session.role !== "ADMIN") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  const employeeId = request.nextUrl.searchParams.get("employeeId");
+  const date = request.nextUrl.searchParams.get("date");
+  if (!employeeId || !date) {
+    return NextResponse.json({ error: "validation" }, { status: 400 });
+  }
+
+  const dateObj = new Date(date + "T00:00:00.000Z");
+  const year = dateObj.getUTCFullYear();
+  const month = dateObj.getUTCMonth() + 1;
+
+  if (await isMonthLocked(year, month)) {
+    return NextResponse.json({ error: "month_locked" }, { status: 403 });
+  }
+
+  try {
+    await prisma.attendanceRecord.delete({
+      where: {
+        employee_id_date: {
+          employee_id: parseInt(employeeId, 10),
+          date: dateObj,
+        },
+      },
+    });
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "code" in err && err.code === "P2025") {
+      return NextResponse.json({ success: true }); // already empty, treat as success
+    }
+    console.error(err);
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
+  }
+}
+
 export async function PUT(request: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") {

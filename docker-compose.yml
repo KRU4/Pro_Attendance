@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: attendance
       POSTGRES_PASSWORD: attendance
       POSTGRES_DB: attendance
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,16 +17,30 @@ services:
   app:
     build: .
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       DATABASE_URL: postgresql://attendance:attendance@db:5432/attendance?schema=public
-      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
-      CRON_SECRET: ${CRON_SECRET:-dev-cron-secret}
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET}
+      CRON_SECRET: ${CRON_SECRET}
+      NEXT_PUBLIC_APP_URL: https://attend.progroupe.cloud
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - default
+      - n8n_default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=n8n_default
+      - traefik.http.routers.pro-attendance.rule=Host(`attend.progroupe.cloud`)
+      - traefik.http.routers.pro-attendance.tls=true
+      - traefik.http.routers.pro-attendance.entrypoints=web,websecure
+      - traefik.http.routers.pro-attendance.tls.certresolver=mytlschallenge
+      - traefik.http.services.pro-attendance.loadbalancer.server.port=3000
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+  n8n_default:
+    external: true

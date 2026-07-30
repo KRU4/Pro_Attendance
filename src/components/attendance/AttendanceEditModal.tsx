@@ -39,6 +39,7 @@ export function AttendanceEditModal({
   const [note, setNote] = useState(cell?.note ?? "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     if (cell) {
@@ -87,6 +88,27 @@ export function AttendanceEditModal({
     onClose();
   };
 
+  const handleClear = async () => {
+    if (!window.confirm(t("clearConfirm"))) return;
+    setClearing(true);
+    setError("");
+
+    const res = await fetch(
+      `/api/attendance/record?employeeId=${employeeId}&date=${cell.date}`,
+      { method: "DELETE" }
+    );
+
+    if (!res.ok) {
+      setError(tc("error"));
+      setClearing(false);
+      return;
+    }
+
+    setClearing(false);
+    onSaved();
+    onClose();
+  };
+
   return (
     <Modal
       open={open}
@@ -94,6 +116,14 @@ export function AttendanceEditModal({
       title={t("editRecord")}
       footer={
         <>
+          <Button
+            variant="secondary"
+            className="text-red-600 hover:bg-red-50 me-auto"
+            onClick={handleClear}
+            disabled={clearing || loading}
+          >
+            {t("clear")}
+          </Button>
           <Button variant="secondary" onClick={onClose}>
             {tc("cancel")}
           </Button>
